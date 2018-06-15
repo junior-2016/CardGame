@@ -24,6 +24,9 @@ struct TargetNeed {
 	int player_need = 0;
 	int enemy_need = 0;
 	int card_layer_need = 0;
+	TargetNeed(int p, int e, int c) :player_need(p), enemy_need(e), card_layer_need(c){}
+	TargetNeed(){
+		player_need = enemy_need = card_layer_need = 0;
+	}
 };
-
 #endif // !_TARGET_H_

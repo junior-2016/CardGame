@@ -16,6 +16,10 @@ struct IntentType {
 struct BehaviourDigital {
 	int damage_digital = 0;
 	int armor_digital = 0;
+	BehaviourDigital(int d, int a) :damage_digital(d), armor_digital(a){}
+	BehaviourDigital(){
+		damage_digital = armor_digital = 0;
+	}
 };
 
 //本质上是一个图标＋说明，也就是敌人头上的意图

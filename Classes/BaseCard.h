@@ -16,6 +16,10 @@ struct CardBaseProperty{
 	int damage_number = 0;
 	int armor_number = 0;
 	int magic_number = 0;	//Íæ¼ÒÖÇÁ¦
+	CardBaseProperty(){
+		damage_number = armor_number = magic_number = 0;
+	}
+	CardBaseProperty(int d, int a, int m) :damage_number(d), armor_number(a), magic_number(m){}
 };
 enum CardType {
 	Attack_Card,//¹¥»÷ÅÆ
