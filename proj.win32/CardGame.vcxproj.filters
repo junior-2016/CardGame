@@ -132,7 +132,7 @@
     <ClCompile Include="..\Classes\CardDisplayLayer.cpp">
       <Filter>src\card\layer</Filter>
     </ClCompile>
-    <ClCompile Include="TestUIScene.cpp">
+    <ClCompile Include="..\Classes\TestUIScene.cpp">
       <Filter>src\scene</Filter>
     </ClCompile>
   </ItemGroup>
@@ -224,7 +224,7 @@
     <ClInclude Include="..\Classes\CardID.h">
       <Filter>src\card</Filter>
     </ClInclude>
-    <ClInclude Include="TestUIScene.h">
+    <ClInclude Include="..\Classes\TestUIScene.h">
       <Filter>src\scene</Filter>
     </ClInclude>
   </ItemGroup>

@@ -52,6 +52,9 @@ bool CardLayer_::init(std::vector<CardID> cardIDs) {
 		addCardToCardLibrary(card);
 	}
 
+	m_card_point_line = DrawNode::create();
+	this->addChild(m_card_point_line,5);
+
 	auto listener = EventListenerMouse::create();
 	listener->onMouseMove = CC_CALLBACK_1(CardLayer_::onMouseMove, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
@@ -284,6 +287,8 @@ void CardLayer_::addCardToDisLibrary(BaseCard*& card) {
 
 //更新布局函数
 void CardLayer_::updateLayout() {
+	m_card_point_line->clear();
+
 	int card_num = m_hand_cards.size();
 	if (card_num == 0)	return;
 
@@ -378,7 +383,9 @@ bool CardLayer_::onTouchBegan(Touch* pTouch, Event* pEvent) {
 	}
 }
 void CardLayer_::onTouchMoved(Touch* pTouch, Event* pEvent) {
-	m_current_card->setPosition(pTouch->getLocation());
+	if (m_isCurrentCanMove) {
+		m_current_card->setPosition(pTouch->getLocation());
+	}
 }
 void CardLayer_::onTouchEnded(Touch* pTouch, Event* pEvent) {
 	CCLOG("CARDLAYER-TOUCH-END");
@@ -391,28 +398,46 @@ void CardLayer_::onTouchEnded(Touch* pTouch, Event* pEvent) {
 			m_hand_cards.eraseObject(m_current_card);
 			m_discard_library.pushBack(m_current_card);
 			m_discard_library_label->setString(Value(m_discard_library.size()).asString());
+
+			if (m_current_card->m_target_need.enemy_need == 1) {
+				// 线清空
+				m_card_point_line->clear();
+				// 禁止绘制曲线...
+				m_isLineDrawable = false;
+				//曲线配置  
+				ccBezierConfig cfg;
+				cfg.controlPoint_1 = control1;
+				cfg.controlPoint_2 = control2;
+				cfg.endPosition = endPoint;
+				
+				m_current_card->runAction(CCSequence::create(
+					CCSpawn::create(
+					CCScaleTo::create(1, 0.2),	CCEaseInOut::create(CCBezierTo::create(1, cfg), 0.5), NULL),
+					//CCCallFunc::create(this, callfunc_selector(CardLayer_::callfunc)),
+					CCCallFuncN::create(std::bind(&CardLayer_::callfunc,this,target)),
+					NULL));
+				return;
+			}
 			m_current_card->setVisible(false);
-
-			//然后作用
 			m_current_card->effect(target);
-
-			//m_current_card->runAction(MoveTo::create(0.2f, m_discard_library_sprite->getPosition()));
-			//m_current_card->runAction( RotateTo::create(0.2f, 90 + rand()));
-
-			/*m_current_card->runAction( Sequence::create( 
-				Spawn::create( MoveTo::create(0.2f, m_discard_library_sprite->getPosition()), RotateTo::create(0.2f, 90 + rand()) , NULL),
-				CallFunc::create( CC_CALLBACK_0( CardLayer_::useCard , this ) ) , 
-				NULL)
-			);*/
-			//从手牌中移除卡牌，并设为不可见
 		}
 	}
 	updateLayout();
-	m_isSelect = false;
 	m_isHovor = false;
+	m_isSelect = false;
 	m_current_card = NULL;
 }
-
+void CardLayer_::callfunc(Target target) {
+	m_current_card->setVisible(false);
+	auto scene = (GameSceneDemo*)(getParent());
+	scene->explode_on_enemy(target);
+	m_current_card->effect(target);
+	updateLayout();
+	m_isHovor = false;
+	m_isSelect = false;
+	m_current_card = NULL;
+	m_isLineDrawable = true;
+}
 void CardLayer_::onMouseMove(EventMouse* pEvent) {
 	if (!m_isSelect) {
 		b2AABB touchAABB;	//触碰点AABB
@@ -424,15 +449,38 @@ void CardLayer_::onMouseMove(EventMouse* pEvent) {
 			if (card->getBody()->GetFixtureList()->GetAABB(0).Contains(touchAABB)) {
 				card->setScale(1.25f);
 				card->setZOrder(10);
-
 				m_current_card = card;
-				m_isHovor = true;
+				if (m_current_card->m_target_need.enemy_need == 1) m_isCurrentCanMove = false;
+				else m_isCurrentCanMove = true;
+				m_isHovor = true; 
 				return;
 			}
 		}
 		m_current_card = NULL;
 		m_isHovor = false;
 		return;
+	}else {
+		if (m_current_card->m_target_need.enemy_need == 1 && m_isLineDrawable) {
+			Vec2 startPoint = m_current_card->getPosition();
+			endPoint = Vec2(pEvent->getCursorX(), pEvent->getCursorY());
+			control1 = ((endPoint - startPoint) * 0.3 + startPoint);
+			control2 = ((endPoint - startPoint) * 0.7 + startPoint);
+			control1.y = control1.y * 1.5;
+			control2.y = control2.y * 1.5;
+			m_card_point_line->clear();
+			m_card_point_line->drawCubicBezier(startPoint, control1, control2, endPoint, 100, Color4F::GREEN);
+			auto scene = (GameSceneDemo*)(getParent());
+			for (BaseEnemy * enemy :scene->m_enemys) {
+				if (enemy->getBoundingBox().containsPoint(endPoint)) {
+					scene->m_current_enemy = enemy;
+					//scene->m_current_enemy->runAction(CCBlink::create(0.5,0.5));
+					return;
+				} 
+			}
+			scene->m_current_enemy = NULL;
+		} else {
+			m_card_point_line->clear();
+		}
 	}
 }
 

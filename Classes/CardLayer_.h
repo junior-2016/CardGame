@@ -11,7 +11,6 @@ class CardLayer_ :public Layer {
 public:
 	static CardLayer_* create(std::vector<CardID>& cardIDs);
 
-
 	BaseCard* drawFromCardLibrary();	//从抽牌库获取卡牌
 	BaseCard* drawFromCardLibraryAtID(int index);	//从下标为index的抽牌库抽取卡牌
 	BaseCard* drawFromDisLibrary();	//从弃牌库获取卡牌
@@ -41,6 +40,7 @@ public:
 	int getSizeOfDisLibrary() { return m_discard_library.size(); }
 
 	bool getIsSelect() { return m_isSelect; }
+	BaseCard* getCurrentCard() { return m_current_card;  }
 
 	void effect_when_round_end();
 private:
@@ -56,6 +56,8 @@ private:
 	virtual void onTouchEnded(Touch* pTouch, Event* pEvent);
 
 	virtual void onMouseMove(EventMouse* pEvent);	//用于检测鼠标停放在卡牌贴图上时的函数
+
+	void callfunc(Target target);
 private:
 	Size m_visibleSize;
 
@@ -74,9 +76,16 @@ private:
 
 	int m_draw_when_round_end = 2;	//结束时抽取卡牌数，对牌库作用的Effect可以对这个产生影响，从而改变每回合抽牌数
 
-	bool m_isHovor;	//是否悬浮
+	bool m_isHovor;	    //是否悬浮
 	bool m_isSelect;	//是否选择了一张卡牌
 
+	bool m_isCurrentCanMove = true; // 所选卡牌可否移动
+	bool m_isLineDrawable = true;  // 发送卡牌阶段不能画线...
+
+	DrawNode * m_card_point_line; 
+	Vec2 endPoint;
+	Vec2 control1;
+	Vec2 control2;
 };
 
 #include"GameSceneDemo.h"

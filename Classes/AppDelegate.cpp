@@ -1,7 +1,7 @@
 #include "AppDelegate.h"
 #include"GameSceneDemo.h"
 #include"TestCardDiplayScene.h"
-#include "TestUIScene.h"
+#include"TestUIScene.h"
 
 USING_NS_CC;
 
@@ -44,7 +44,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     FileUtils::getInstance()->addSearchPath("res");
 
     // create a scene. it's an autorelease object
-    auto scene = TestUIScene::createScene();
+    auto scene = GameSceneDemo::createScene();
 	//auto scene = TestCardDisplayScene::createScene();
 
     // run
