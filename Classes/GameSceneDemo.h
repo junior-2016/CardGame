@@ -32,6 +32,7 @@ public:
 	int getCurrentRound() { return m_current_rounds; }
 
 	void explode_on_enemy(Target target);
+	void play_music(std::string name);
 private:
 	void endRound( Ref* pRef );
 	void updateCostLabel();
@@ -50,8 +51,6 @@ private:
 	int m_current_rounds;
 
 	Size m_visibleSize;
-
-	Size m_gl_size; // GL坐标系下窗口大小
 
 	CardLayer_* m_card_layer;
 

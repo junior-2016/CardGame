@@ -30,7 +30,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
         glview = GLViewImpl::createWithRect("CardGame", Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
-        director->setOpenGLView(glview);
+		glview->setCursorVisible(false); // ½ûÖ¹ÏÔÊ¾Êó±ê ... 
+		director->setOpenGLView(glview);
     }
 
     director->getOpenGLView()->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::SHOW_ALL);

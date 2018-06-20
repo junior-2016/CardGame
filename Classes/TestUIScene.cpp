@@ -8,10 +8,14 @@
 #include "ui/CocosGUI.h"
 #include "cocos2d.h"
 
+#include "spine/spine-cocos2dx.h"
+#include "spine/spine.h"
+
 using namespace cocos2d;
 using namespace cocos2d::ui;
 using namespace cocos2d::experimental;
 using namespace CocosDenshion;
+using namespace spine;
 
 Scene* TestUIScene::createScene() {
 	auto scene = Scene::create();
@@ -27,7 +31,9 @@ bool TestUIScene::init() {
 
 	FileUtils::getInstance()->addSearchPath("res/Particle3D/materials");
 	FileUtils::getInstance()->addSearchPath("res/Particle3D/scripts");
-
+	FileUtils::getInstance()->addSearchPath("res/character/monsters");
+	FileUtils::getInstance()->addSearchPath("res/character/characters");
+	/*
 	size = Director::getInstance()->getWinSize();
 	Camera* _camera = Camera::createPerspective(30.0f, size.width / size.height, 1.0f, 1000.0f);
 	_camera->setPosition3D(Vec3(0.0f, 0.0f, 100.0f));
@@ -83,7 +89,14 @@ bool TestUIScene::init() {
 			CCLOG("unsuccess\n");
 		}
 	});
+	*/
 	
+	// add enemy 
+	auto skeletonNode = spine::SkeletonAnimation::createWithFile
+	  ("theSilent/idle/skeleton.json", "theSilent/idle/skeleton.atlas", 1.0 );//0.2是设置图片的缩放比例
+	skeletonNode->setPosition(Point(400, 200));
+	skeletonNode->setAnimation(0, "idle", true);//true是指循环播放walk动作
+	this->addChild(skeletonNode);
 
 	//添加触摸监听器
 	auto listener = EventListenerTouchOneByOne::create();
@@ -102,9 +115,7 @@ void TestUIScene::update(float dt) {
 	
 }
 void TestUIScene::onEnterTransitionDidFinish() {
-	bool loop = true;
-	float volume = 1.0f;
-	AudioEngine::play2d("audio/bg.mp3",loop,volume);
+
 }
 
 bool  TestUIScene::onTouchBegan(Touch* pTouch, Event* pEvent) {
@@ -119,6 +130,7 @@ void TestUIScene::onTouchEnded(Touch* pTouch, Event* pEvent) {
 }
 
 void TestUIScene::onMouseMove(EventMouse* pEvent) {
+	/*
 	auto r = (PUParticleSystem3D *)this->getChildByTag(101);
 	auto r1 = (PUParticleSystem3D *)this->getChildByTag(102);
 	Vec2 position = Vec2(pEvent->getCursorX(), pEvent->getCursorY());
@@ -129,4 +141,5 @@ void TestUIScene::onMouseMove(EventMouse* pEvent) {
 	position.x = k1*position.x + (-40.0);
 	position.y = k2*position.y + (-20.0);
 	r->setPosition(position);
+	*/
 }

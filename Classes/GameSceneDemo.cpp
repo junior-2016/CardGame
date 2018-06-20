@@ -19,68 +19,22 @@ bool GameSceneDemo::init() {
 	}
 	m_visibleSize = _director->getVisibleSize();
 
-	/*----------------- 3d 支持 ------------------- */
-	FileUtils::getInstance()->addSearchPath("res/Particle3D/materials");
-	FileUtils::getInstance()->addSearchPath("res/Particle3D/scripts");
-	m_gl_size = Director::getInstance()->getWinSize();
-	Camera * _camera = Camera::createPerspective(30.0f, m_gl_size.width / m_gl_size.height, 1.0f, 1000.0f);
-	_camera->setPosition3D(Vec3(0.0f, 0.0f, 100.0f));
-	_camera->lookAt(Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
-	_camera->setCameraFlag(CameraFlag::USER1);
-	this->addChild(_camera);
-	
-	/*
-	auto shader = GLProgram::createWithFilenames("shader/cube_map.vert",
-		"shader/cube_map.frag");
-	auto state = GLProgramState::create(shader);
-	TextureCube *  _textureCube = TextureCube::create("skybox/4/Left.jpg",
-		"skybox/4/Right.jpg",
-		"skybox/4/Top.jpg",
-		"skybox/4/Bottom.jpg",
-		"skybox/4/Front.jpg",
-		"skybox/4/Back.jpg");
-	Texture2D::TexParams tRepeatParams;
-	tRepeatParams.magFilter = GL_LINEAR;
-	tRepeatParams.minFilter = GL_LINEAR;
-	tRepeatParams.wrapS = GL_MIRRORED_REPEAT;
-	tRepeatParams.wrapT = GL_MIRRORED_REPEAT;
-	_textureCube->setTexParameters(tRepeatParams);
-	state->setUniformTexture("u_cubeTex", _textureCube);
-	// add skybox
-	Skybox * _skyBox = Skybox::create();
-	_skyBox->setCameraMask((unsigned short)CameraFlag::USER1);
-	_skyBox->setTexture(_textureCube);
-	this->addChild(_skyBox);
-	*/
-
-	// add particle
-	auto particle = PUParticleSystem3D::create("explosionSystem.pu");
-	particle->setCameraMask((unsigned short)CameraFlag::USER1);
-	particle->setScale(1.0f);
-	particle->setPositionZ(10.0); // 设置z坐标大于0平面
-	particle->setPosition(0.0f, 0.0f);
-	// 这个特效的位置是在3维空间透视后的位置...
-	// 范围大概是 : width [-40,40] height [-20,20] ...
-	this->addChild(particle, 1.0 , 101);
-	// add bg music
-	AudioEngine::preload("audio/bg.mp3", [&](bool isSuccess) {
-		if (isSuccess) {
-			CCLOG("success\n");
-		}
-		else {
-			CCLOG("unsuccess\n");
-		}
-	});
+	auto emitter = CCParticleFire::create();
+	emitter->setDuration(0.5);
+	emitter->stopSystem();
+	this->addChild(emitter,1,101);
 
 	m_current_rounds = 1;
 
-	Sprite * bg = Sprite::create("skybox/bg.png");  
+	Sprite * bg = Sprite::create("skybox/bg.png");
+	bg->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
+	bg->setOpacity(155);
 	this->addChild(bg);
 
 	//初始化玩家
 	m_player = Player::create("character/player.png", 80, 0, 0, 0, 0, 3);
 	m_player->setPosition( m_visibleSize.width * 1 / 4 , m_visibleSize.height / 2 );
-	m_player->setScale(0.07);
+	m_player->setScale(0.06);
 	this->addChild(m_player , 0 , "player");
 
 	//初始化敌人1
@@ -117,6 +71,7 @@ bool GameSceneDemo::init() {
 	this->addChild(menu, 1);
 
 	//初始化卡牌
+	// 如果后面用杀戮尖塔的卡牌,可以考虑用spine直接对卡牌图片文件通过位置切割... 
 	std::vector<CardID> cardIDs;
 	cardIDs.push_back(CardID::Strike);
 	cardIDs.push_back(CardID::Strike);
@@ -156,6 +111,9 @@ bool GameSceneDemo::init() {
 	m_ai_manager = AIManager::create(m_player, m_enemys);
 	this->addChild(m_ai_manager);
 
+	//鼠标指针
+	auto cursor = Sprite::create("ui/cursor.png");
+	this->addChild(cursor, 1, 255);
 
 	//添加触摸监听器
 	auto listener = EventListenerTouchOneByOne::create();
@@ -166,6 +124,7 @@ bool GameSceneDemo::init() {
 	listener1->onMouseMove = CC_CALLBACK_1(GameSceneDemo::onMouseMove, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener1, this);
+	
 	this->scheduleUpdate();
 
 	return true;
@@ -173,21 +132,19 @@ bool GameSceneDemo::init() {
 
 void GameSceneDemo::onEnterTransitionDidFinish() {
 	bool loop = true;
-	float volume = 1.0f;
-	AudioEngine::play2d("audio/bg.mp3", loop, volume);
+	float volume = 0.5f;
+	AudioEngine::preload("audio/boss1.mp3");
+	AudioEngine::play2d("audio/boss1.mp3", loop, volume);
 }
 
-// TODO: 有待修改...
+void GameSceneDemo::play_music(std::string name) {
+	AudioEngine::play2d(name, false, 1.0);
+}
 void GameSceneDemo::explode_on_enemy(Target target) {
-	auto particle = (PUParticleSystem3D *)this->getChildByTag(101);
+	auto particle = (CCParticleFire *)this->getChildByTag(101);
 	for (BaseEnemy * e : target.enemys) {
-		Vec2 position = e->getPosition();
-		float k1 = (40.0 - (-40.0)) / (m_gl_size.width);
-		float k2 = (20.0 - (-20.0)) / (m_gl_size.height);
-		position.x = k1 * position.x + (-40.0) ;
-		position.y = k2 * position.y + (-20.0);
-		particle->setPosition(position);
-		particle->startParticleSystem();
+		particle->setPosition(e->getPosition());
+		particle->resetSystem();
 	}
 }
 
@@ -214,41 +171,45 @@ Target GameSceneDemo::getTarget(BaseBehaviour* behaviour) {
 Target GameSceneDemo::getTarget(BaseCard* card) {
 	Target target;
 	target.isReady = true;
-
-	int current_cost = m_player->getCost();
-	if ( card->getCardCost() > current_cost) {
+	if (card == NULL) {
 		target.isReady = false;
-		CCLOG("I do not have enough cost");
-	}
-	switch (card->m_target_need.enemy_need) {
-		case 0:
-			break;
+		CCLOG("card is a null pointer!!!\n");
+	} else {
+		int current_cost = m_player->getCost();
+		if (card->getCardCost() > current_cost) {
+			target.isReady = false;
+			CCLOG("I do not have enough cost");
+		} else {
+			switch (card->m_target_need.enemy_need) {
+			case 0:
+				break;
 
-		case 1:
-			if (m_current_enemy == NULL) {
-				target.isReady = false;
+			case 1:
+				if (m_current_enemy == NULL) {
+					target.isReady = false;
+				}
+				else {
+					target.enemys.pushBack(m_current_enemy);
+				}
+				break;
+
+			case -1:
+				target.enemys = m_enemys;
+				break;
 			}
-			else {
-				target.enemys.pushBack(m_current_enemy);
+
+			if (card->m_target_need.player_need) {
+				target.players.pushBack(m_player);
 			}
-			break;
+			if (card->m_target_need.card_layer_need) {
+				target.cardLayers.pushBack(m_card_layer);
+			}
 
-		case -1:
-			target.enemys = m_enemys;
-			break;
+			if (target.isReady) {
+				m_player->changeCost(-card->getCardCost());
+			}
+		}
 	}
-
-	if (card->m_target_need.player_need) {
-		target.players.pushBack(m_player);
-	}
-	if (card->m_target_need.card_layer_need) {
-		target.cardLayers.pushBack(m_card_layer);
-	}
-
-	if (target.isReady) {
-		m_player->changeCost( -card->getCardCost());
-	}
-
 	return target;
 }
 
@@ -308,6 +269,14 @@ void GameSceneDemo::onMouseMove(EventMouse* pEvent) {
 	//	}
 	//}
 	//m_current_enemy = NULL;
+	auto cursor = (Sprite*)this->getChildByTag(255);
+	if (pEvent->getCursorX() <= 0 || pEvent->getCursorX() >= m_visibleSize.width ||
+		pEvent->getCursorY() <= 0 || pEvent->getCursorY() >= m_visibleSize.height) {
+		cursor->setVisible(false);
+	} else {
+		cursor->setVisible(true);
+		cursor->setPosition(pEvent->getCursorX(), pEvent->getCursorY());
+	}
 }
 
 void GameSceneDemo::updateCostLabel() {

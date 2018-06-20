@@ -7,6 +7,8 @@
 #include"BaseCard.h"
 #include"CardSystem.h"
 
+#define LINE_SPRITE_NUMBER 10 // 卡牌拉线上的图标个数
+
 class CardLayer_ :public Layer {
 public:
 	static CardLayer_* create(std::vector<CardID>& cardIDs);
@@ -57,7 +59,14 @@ private:
 
 	virtual void onMouseMove(EventMouse* pEvent);	//用于检测鼠标停放在卡牌贴图上时的函数
 
-	void callfunc(Target target);
+	void callfunc(BaseCard * card, Target target);
+
+	void enemy_shake_action_callback();
+
+	Vec2* getCubicBezierPoints(const Vec2 &origin, const Vec2 &control1, 
+		const Vec2 &control2, const Vec2 &destination, unsigned int segments);
+	void clearLine();
+
 private:
 	Size m_visibleSize;
 
@@ -80,12 +89,16 @@ private:
 	bool m_isSelect;	//是否选择了一张卡牌
 
 	bool m_isCurrentCanMove = true; // 所选卡牌可否移动
-	bool m_isLineDrawable = true;  // 发送卡牌阶段不能画线...
+	bool m_isSendCard = false;  // 发送卡牌阶段不能对卡牌区有任何变动...
 
-	DrawNode * m_card_point_line; 
+	BaseCard * m_oldSelectCard = NULL; // 之前选择的卡牌,使用这个是为了防止鼠标在同一张卡牌移动时发出连续的声音...
+
 	Vec2 endPoint;
 	Vec2 control1;
 	Vec2 control2;
+	bool m_isEnemyCanShake = true;
+
+	Sprite ** line = new Sprite*[LINE_SPRITE_NUMBER];
 };
 
 #include"GameSceneDemo.h"

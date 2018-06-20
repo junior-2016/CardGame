@@ -61,6 +61,9 @@
     <Filter Include="src\ai">
       <UniqueIdentifier>{649f162a-9684-4e85-a0c3-f6d5faf7fcda}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\util\tool">
+      <UniqueIdentifier>{99d1078c-1d1a-4d6f-be16-bd8bfbccf040}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -134,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="..\Classes\TestUIScene.cpp">
       <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CCShake.cpp">
+      <Filter>src\util\tool</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -226,6 +232,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\TestUIScene.h">
       <Filter>src\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CCShake.h">
+      <Filter>src\util\tool</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
