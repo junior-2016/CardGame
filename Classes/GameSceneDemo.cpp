@@ -2,9 +2,12 @@
 #include "Particle3D/CCParticleSystem3D.h"
 #include "Particle3D/PU/CCPUParticleSystem3D.h"
 #include "audio/include/AudioEngine.h"
+#include "spine/spine-cocos2dx.h"
+#include "spine/spine.h"
 
 using namespace cocos2d;
 using namespace cocos2d::experimental;
+using namespace spine;
 
 Scene* GameSceneDemo::createScene() {
 	auto scene = Scene::create();
@@ -114,6 +117,15 @@ bool GameSceneDemo::init() {
 	//鼠标指针
 	auto cursor = Sprite::create("ui/cursor.png");
 	this->addChild(cursor, 1, 255);
+
+	// add animation
+	FileUtils::getInstance()->addSearchPath("res/character/monsters");
+	FileUtils::getInstance()->addSearchPath("res/character/characters");
+	auto skeletonNode = spine::SkeletonAnimation::createWithFile
+	("theBottom/boss/guardian/skeleton.json", "theBottom/boss/guardian/skeleton.atlas", 0.5);//0.2是设置图片的缩放比例
+	skeletonNode->setPosition(Point(400, 200));
+	skeletonNode->setAnimation(0, "idle", true);//true是指循环播放walk动作
+	this->addChild(skeletonNode);
 
 	//添加触摸监听器
 	auto listener = EventListenerTouchOneByOne::create();
